@@ -11,10 +11,5 @@ public class EffectsManager : MonoBehaviour
         Destroy(Instantiate(effect, position, Quaternion.identity),clips[0].length);
     }
 
-    public void InstantiateAreaEffect()
-    { }
-
-    public void InstantiateCircleEffect()
-    { }
 
 }

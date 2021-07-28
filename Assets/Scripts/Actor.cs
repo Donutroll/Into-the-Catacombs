@@ -11,9 +11,12 @@ public class Actor : Entity //An Actor is an Entity that acts
 
     public BaseAI ai = null;
     public Inventory inventory = null;
+
     private void Start()
     {
         inventory.parent = this;
+        ai.parent = this;
+        fighter.parent = this;
     }
 
     public bool is_alive()
@@ -23,7 +26,7 @@ public class Actor : Entity //An Actor is an Entity that acts
 
     public void ActorDamaged(Fighter fighter, int damage)
     {
-        Debug.Log(type + " takes " + damage + "!");
+        Debug.Log(fighter.parent.type + " takes " + damage + "!");
         if (type == "Player")
             PlayerDamage?.Invoke(fighter);
 
@@ -32,6 +35,7 @@ public class Actor : Entity //An Actor is an Entity that acts
         DamagePopup = Instantiate(DamagePopup, this.transform.position, Quaternion.identity); //passed twice because instantiate creates an individual instance
         Destroy(DamagePopup, 1f);
     }
+
 
 }
 

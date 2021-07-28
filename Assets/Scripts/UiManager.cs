@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,21 +22,22 @@ public class UiManager : MonoBehaviour
 
     private void Start()
     {
+        player = engine.player;
         UpdatePlayerHealth(player.GetComponent<Actor>().fighter);
-
         player.GetComponent<Actor>().inventory.OnInventoryChange += UpdatePlayerInventory;
         player.GetComponent<Actor>().PlayerDamage += UpdatePlayerHealth;
     }
     private void Update()
     {
+
     }
 
     public void UpdatePlayerHealth(Fighter player)
     {
         playerHeatlh.text = "Hp: " + player.hp + "/" + player.maxHp;
-        if (player.currHp <= 0)
+        if (player.hp <= 0)
         {
-            engine.eventManager = new GameOverEvent(engine);
+              engine.eventManager = new GameOverEvent(engine);
             Instantiate(PauseMenu);
         }
     }
@@ -47,18 +48,7 @@ public class UiManager : MonoBehaviour
         coinCount.text = "Coin " + coins; 
     }
 
-    public void Pause()
-    {
-        Instantiate(PauseMenu, new Vector3(0, 0, 0), Quaternion.identity);
-        PauseMenu.SetActive(true);
 
-    }
-
-    public void Resume()
-    {
-        Destroy(PauseMenu);
-        PauseMenu.SetActive(false);
-    }
     
     public void UpdatePlayerInventory()
     {

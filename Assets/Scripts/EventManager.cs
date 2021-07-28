@@ -28,9 +28,8 @@ public class EventManager
             return;
         }
         
-        action.Perform(engine, player.GetComponent<Actor>());
+        action.Perform(engine);
         HandleEnemyTurn();
-        engine.eventManager = new MainGameEvent(this.engine);
     }
 
     public virtual void HandleEvent()
@@ -40,14 +39,25 @@ public class EventManager
 
     public void HandleEnemyTurn()
     {
-        GridMap grid = engine.Grid;
-        for (int i = 0; i < grid.Actors.Count; ++i)
+        GridMap Grid = engine.Grid;
+        for (int i = 1; i < Grid.Actors.Count; ++i)
         {
-            if (grid.Actors[i].ai != null && grid.Actors[i].type != "Player")
-                grid.Actors[i].ai.Perform(engine, player.GetComponent<Actor>());
+            Actor actor = Grid.Actors[i];
+            if ( GameManager.VectorDistance(actor.gameObject, player) < engine.lightingRenderer.playerLightRadius )
+            { 
+                actor.fighter.Energy += actor.fighter.recoverySpeed;
+                while (actor.fighter.Energy >= Fighter.actionCost)
+                {
+                    actor.fighter.Energy -= actor.ai.TakeTurn(engine);
+                }
+            }
         }
 
     }
+
+    
+
+
     public Tuple<int, int> MoveLog(KeyCode input)
     {
         switch (input)
@@ -94,10 +104,18 @@ public class GameOverEvent : EventManager
 {
     public GameOverEvent(GameManager engine) : base (engine)
     { }
-
     public override void HandleEvent()
     {
+        foreach (KeyCode k in engine.inputManager.inputList)
+        {
+            if (k == KeyCode.Escape)
+                OnExit();
+        }
+    }
 
+    public void OnExit()
+    {
+        engine.eventManager = new MainGameEvent(this.engine);
     }
 }
 
@@ -105,6 +123,15 @@ public class PauseScreenEvent : EventManager
 {
     public PauseScreenEvent(GameManager engine) : base (engine)
     { }
+
+    public override void HandleEvent()
+    {
+       foreach( KeyCode k in engine.inputManager.inputList)
+        {
+            if (k == KeyCode.Escape)
+                OnExit();
+        }
+    }
 
     public void OnExit()
     {
@@ -131,7 +158,7 @@ public class MainGameEvent : EventManager
             {
                 int dx = MoveLog(k).Item1;
                 int dy = MoveLog(k).Item2;
-                action = new ChoiceAction(dx, dy);
+                action = new ChoiceAction(player.GetComponent<Actor>(), dx, dy);
             }
             else if( k == KeyCode.I)
             {
@@ -246,10 +273,9 @@ public class UseInventoryItem : InventoryEvent
 
     public override void OnSelected()
     {
+        OnExit();
         ui.SelectionBorder.SetActive(false);
-
         base.HandleAction(itemToUse.consumable.GetAction(this)); //calls an intermediate from the consumable component
-
     }
 }
 
@@ -265,10 +291,9 @@ public class DropInventoryItem : InventoryEvent
 
     public override void OnSelected()
     {
-        ui.SelectionBorder.SetActive(false);
-
-        base.HandleAction(new DropItemAction(player.GetComponent<Actor>(), itemToUse));
         OnExit();
+        ui.SelectionBorder.SetActive(false);
+        base.HandleAction(new DropItemAction(player.GetComponent<Actor>(), itemToUse));
     }
 }
 
@@ -311,7 +336,7 @@ public class TargetingEvent : AskForEvent
                 selectionBorder.SetActive(false);
                 OnExit();
             }
-            else if(Enterlog.Contains(k) && targetLocation != player.transform.position && engine.Grid.WorldToCell(targetLocation).walkable)
+            else if(Enterlog.Contains(k) && targetLocation != player.transform.position && engine.Grid.WorldToTile(targetLocation).walkable)
             {
                 Debug.Log("selected");
                 this.OnSelected(); //calls subclass
@@ -353,8 +378,7 @@ public class TargetingAreaEvent : TargetingEvent
     System.Action<Vector3> returnAction;
     public TargetingAreaEvent(GameManager engine, int radius, System.Action<Vector3> toCall ) : base(engine)
     {
-        this.radius = radius;
-        selectionBorder.transform.localScale = new Vector3(radius, radius);
+        selectionBorder.transform.localScale = new Vector3(0.5f,0.5f);
         this.returnAction = toCall;
     }
 
@@ -365,8 +389,8 @@ public class TargetingAreaEvent : TargetingEvent
 
     public override void OnSelected()
     {
+        OnExit();
         engine.DestroyObject(selectionBorder);
         returnAction(targetLocation);
-        OnExit();
     }
 }

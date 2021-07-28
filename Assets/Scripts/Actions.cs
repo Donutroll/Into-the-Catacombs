@@ -9,11 +9,8 @@ namespace Game
     {
         public GameManager engine;
 
-       //abstract? class for virtual inheritances
-       public virtual void Perform(GameManager engine, Entity entity)
-        {
-            Debug.Log("called base class, somethings gone wrong with " + entity.name);
-        }
+       //abstract class for virtual inheritance
+
 
         public virtual void Perform(GameManager engine)
         {
@@ -28,7 +25,7 @@ namespace Game
 
     public class WaitAction : Action
     {
-        public override void Perform()
+        public override void Perform(GameManager engine)
         {
         }
     }
@@ -58,7 +55,7 @@ namespace Game
             return engine.Grid.GetEntityAt(location);
         }
 
-        public override void Perform(GameManager engine, Entity entity)
+        public override void Perform(GameManager engine)
         {
             this.engine = engine;
             item.consumable.Activate(this);
@@ -74,10 +71,10 @@ namespace Game
             this.actor = actor;
         }
 
-        public override void Perform(GameManager engine, Entity entity)
+        public override void Perform(GameManager engine)
         {
             actor.inventory.RemoveItem(item);
-            engine.Grid.AddEntity(item, entity.gameObject.transform.position);
+            engine.Grid.AddEntity(item, actor.gameObject.transform.position);
         }
     }
 
@@ -91,7 +88,7 @@ namespace Game
             this.actor = actor;
         }
 
-        public override void Perform(GameManager engine, Entity entity)
+        public override void Perform(GameManager engine)
         {
             if (item.type == "coin")
             {
@@ -124,38 +121,46 @@ namespace Game
     {
         public EscapeAction(GameManager engine)
         {
-            Debug.Log("initialised EscapeAction class");
-            engine.uiManager.Pause();
         }
     }
 
     public class DirectionAction : Action// superclass related to actions that require positions
     {
         public int dx, dy;
-
+        public Entity entity;
         public DirectionAction(int dx , int dy )
         {
             this.dx = dx;
             this.dy = dy;
         }
+
+        public DirectionAction(int dx, int dy, Entity entity)
+        {
+            this.dx = dx;
+            this.dy = dy;
+            this.entity = entity;
+        }
     }
 
     public class MovementAction : DirectionAction// subclass to move
     {
-        public MovementAction(int dx = 1, int dy = 1) : base(dx, dy)
-        { }
-        public override void Perform(GameManager engine, Entity entity)
+        public MovementAction(Entity entity, int dx = 1, int dy = 1) : base(dx, dy, entity)
+        {
+        }
+
+
+        public override void Perform(GameManager engine)
         {
             Vector3 destination = entity.transform.position + new Vector3(dx, dy, 0);
             Entity blockade = engine.Grid.GetEntityAt(destination);
             //Debug.Log(entity.type + " has taken a step to" + destination);
-            if (!engine.Grid.WorldToCell(destination).walkable)
+            if (!engine.Grid.WorldToTile(destination).walkable)
                 Debug.Log("unwalkable space");
             else if (blockade && blockade.blockMove)
                 Debug.Log("Blocking");
             else
             {
-                entity.gameObject.transform.position = destination;
+                entity.transform.position = destination;
             }
 
         }
@@ -163,9 +168,9 @@ namespace Game
        
     public class MeleeAction : DirectionAction// subclass to attack
     {
-        public MeleeAction(int dx = 1, int dy = 1) : base(dx, dy)
+        public MeleeAction( Entity entity, int dx = 1, int dy = 1) : base(dx, dy, entity)
         { }
-        public override void Perform(GameManager engine, Entity entity)
+        public override void Perform(GameManager engine)
         {
             Vector3 destination = entity.transform.position + new Vector3(dx, dy, 0);
             Entity target = engine.Grid.GetEntityAt(destination);
@@ -186,41 +191,44 @@ namespace Game
 
     public class ChoiceAction : DirectionAction //decides between other subclasses
     {
-        public ChoiceAction(int dx = 1, int dy = 1) : base(dx, dy)
+        public ChoiceAction(Entity entity, int dx = 1, int dy = 1) : base(dx, dy, entity)
         { }
         
-        public override void Perform(GameManager engine, Entity entity)
+        public override void Perform(GameManager engine)
         {
+
             Vector3 destination = entity.transform.position + new Vector3(dx, dy, 0);
             Entity blocker = engine.Grid.GetEntityAt(destination);
             if (blocker != null )
             {
                 if( blocker is Actor && ((Actor)blocker).ai != null)
-                    new MeleeAction(this.dx, this.dy).Perform(engine, entity);
+                    new MeleeAction(entity, this.dx, this.dy).Perform(engine);
                 else if (blocker is Actor && ((Actor)blocker).ai == null )
-                    new MovementAction(this.dx, this.dy).Perform(engine, entity);
+                    new MovementAction(entity,this.dx, this.dy).Perform(engine);
                 if (blocker is Item && entity.type == "Player")
                 {
-                    new MovementAction(this.dx, this.dy).Perform(engine, entity);
-                    new PickupItem((Item)blocker, (Actor)entity).Perform(engine,entity);
+                    new MovementAction(entity, this.dx, this.dy).Perform(engine);
+                    new PickupItem((Item)blocker, (Actor)entity).Perform(engine);
                 }
             }
             else 
-                new MovementAction(this.dx, this.dy).Perform(engine, entity);
+                new MovementAction(entity, this.dx, this.dy).Perform(engine);
 
         }
     }
 
     public class NextFloorAction : Action
     {
-        public override void Perform(GameManager engine, Entity entity)
+        public override void Perform(GameManager engine)
         {
             GridMap grid = engine.Grid;
-            if (entity.transform.position == grid.stairWorldPos)
+            if (engine.player.transform.position == grid.stairWorldPos)
             {
-                grid.tilemap.ClearAllTiles();
+                grid.floorTiles.ClearAllTiles();
+                grid.wallTiles.ClearAllTiles();
+                engine.lightingRenderer.DrawFog();
                 grid.Rooms.Clear();
-                for (int i = grid.Entities.Count - 1; i > 1; --i) //iterate backwards because List.removeAt shifts index down
+                for (int i = grid.Entities.Count - 1; i >= 1; --i) //iterate backwards because List.removeAt shifts index down
                 {
                     if (grid.Entities[i].type != "Player")
                     {
@@ -228,7 +236,8 @@ namespace Game
                         grid.Entities.RemoveAt(i);
                     }
                 }
-                engine.Grid.GenerateMap(entity.gameObject, 20, 3, 6, 3, 7, 10, 5);
+                engine.Grid.GenerateMap(engine.player.gameObject, 20, 3, 6, 3, 7, 10, 5);
+                engine.lightingRenderer.RenderLight(engine.lightingRenderer.playerLightRadius, engine.player.GetComponent<Actor>());
             }
         }
 

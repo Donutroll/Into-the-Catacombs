@@ -52,6 +52,10 @@ MonoBehaviour:
     currHp: 0
     defense: 0
     power: 3
+    recoverySpeed: 100
+  ai:
+    parent: {fileID: 0}
+    drop_item: coin
   inventory:
     parent: {fileID: 0}
     capacity: 0

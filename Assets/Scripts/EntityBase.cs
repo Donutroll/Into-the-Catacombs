@@ -12,7 +12,23 @@ public class Fighter
 {
     public Actor parent = null;
 
-    public int maxHp, currHp, defense, power;
+    public int maxHp, currHp, defense, power, recoverySpeed;
+    public const int actionCost = 100;
+    private int _Energy;
+    public int Energy
+    {
+        get
+        {
+            return _Energy;
+        }
+        set
+        {
+            if (value < 0)
+                _Energy = 0;
+            else
+                _Energy = value;
+        }
+    }
 
     public Fighter(int hp, int defense, int power, Actor parent)
     {
@@ -66,7 +82,9 @@ public class Fighter
     }
 }
 
-public class BaseAI : Action
+
+[System.Serializable]
+public class BaseAI 
 {
     public BaseAI()
     {
@@ -85,19 +103,25 @@ public class BaseAI : Action
         {
             if (e.blockMove || e is Item)//prevents enemies from gathering by making surroundings more difficult to traverse
             {
-                Tile entityTile = engine.Grid.WorldToCell(e.transform.position);
+                Tile entityTile = engine.Grid.WorldToTile(e.transform.position);
                 foreach ( Tile t in engine.Grid.GetNeighbouringTiles(entityTile))
                     pathMap[t.gridX,t.gridY].mCost += 30;
             }
         }
 
-        Tile selfTile = engine.Grid.WorldToCell(self.transform.position);
-        Tile targetTile = engine.Grid.WorldToCell(target.transform.position);
+        Tile selfTile = engine.Grid.WorldToTile(self.transform.position);
+        Tile targetTile = engine.Grid.WorldToTile(target.transform.position);
 
         List<Tile> returnPath = new PathFinding(pathMap, selfTile, targetTile).GetPath();
 
         return returnPath;
            
+    }
+
+    public virtual int TakeTurn(GameManager engine)
+    {
+        Debug.Log("base take turn called, somethings gone wrong with: " + parent.type);
+        return 0;
     }
 }
 
@@ -112,29 +136,36 @@ public class HostileEnemy : BaseAI
     }
 
 
-    public override void Perform(GameManager engine, Entity target) 
+    public void Perform(GameManager engine, Entity target) 
     {
         int dx = (int)(target.transform.position.x - parent.transform.position.x); //distance to player of x
         int dy = (int)(target.transform.position.y - parent.transform.position.y); // distance to player of y
-        int distance = Mathf.Max( Mathf.Abs(dx), Mathf.Abs(dy)); // will get the axis coordinates that is closest. You will hate me for this
+        int distance = Mathf.Max( Mathf.Abs(dx), Mathf.Abs(dy)); 
+
 
         if (distance <= 1 && !(Mathf.Abs(dx) == 1 && Mathf.Abs(dy) == 1))
-            new MeleeAction(dx, dy).Perform(engine, parent); //passes destination of attack by dx, dy
-        else if( distance <= 5) 
+            new MeleeAction(this.parent, dx, dy).Perform(engine); //passes destination of attack by dx, dy
+        else if (distance <= 5 && Mathf.Abs((parent.transform.position - target.transform.position).magnitude) < engine.lightingRenderer.playerLightRadius)
         {
             path = get_path_to(engine, parent, target);
-
-            if(path != null)
+            if (path != null)
             {
                 Tile toTile = path[0];
                 path.RemoveAt(0);
-                new MovementAction((int)(toTile.tilePostion.x - parent.transform.position.x), (int)(toTile.tilePostion.y - parent.transform.position.y)).Perform(engine, parent);
+                new MovementAction(this.parent, (int)(toTile.tilePostion.x - parent.transform.position.x), (int)(toTile.tilePostion.y - parent.transform.position.y)).Perform(engine);
             }
         }
 
-        new WaitAction().Perform();
+            new WaitAction().Perform(engine);
 
     }
+
+    public override int TakeTurn(GameManager engine)
+    {
+       Perform(engine, engine.player.GetComponent<Actor>());
+        return Fighter.actionCost;
+    }
+
 }
 
 
@@ -191,7 +222,7 @@ public class FireDamageConsumable : Consumable
     
     public override Action GetAction(InventoryEvent ev)
     {
-        ev.engine.eventManager = new TargetingAreaEvent(ev.engine, radius, (Vector3 xy) => { new ItemAction(ev.player.GetComponent<Actor>(), ev.itemToUse, xy).Perform(ev.engine, ev.player.GetComponent<Actor>()); } );
+        ev.engine.eventManager = new TargetingAreaEvent(ev.engine, radius, (Vector3 xy) => { new ItemAction(ev.player.GetComponent<Actor>(), ev.itemToUse, xy).Perform(ev.engine); } );
         return null;
     }
     public override void Activate(ItemAction action)
@@ -199,7 +230,7 @@ public class FireDamageConsumable : Consumable
         Entity user = action.entity;
         GridMap gridMap = action.engine.Grid;
 
-        Tile castTile = gridMap.WorldToCell(action.location);
+        Tile castTile = gridMap.WorldToTile(action.location);
         Rooms.RectangleRoom areaToHit = new Rooms.RectangleRoom((int)castTile.gridX - radius, (int)castTile.gridY - radius, radius * 2, radius * 2);
 
         for( int i = 0; i < gridMap.Actors.Count; ++i)
@@ -223,8 +254,33 @@ public class FireDamageConsumable : Consumable
     }
 }
 
-public class ElectricDamageConsumable
+
+[CreateAssetMenu(fileName = "ElectricDamageConsumable", menuName = "Items / ElectricDamageConsumable")]
+public class ElectricDamageConsumable : Consumable
 {
+    public int damage = 0;
+    public int radius = 0;
+    public override Action GetAction(InventoryEvent ev)
+    {
+        ev.engine.eventManager = new TargetingAreaEvent(ev.engine, radius, (Vector3 xy) => { new ItemAction(ev.player.GetComponent<Actor>(), ev.itemToUse, xy).Perform(ev.engine); });
+        return null;
+    }
+
+    public override void Activate(ItemAction action)
+    {
+        Entity user = action.entity;
+        foreach (Actor actor in action.engine.Grid.Actors)
+        {
+            if (actor.transform.position == action.location)
+            {
+                actor.fighter.hp -= damage;
+                break;
+            }
+        }
+        action.engine.effectsManager.InstantiateEffect(Effect, action.location);
+        if (user is Actor)
+            ((Actor)user).inventory.RemoveItem(action.item);
+    }
 
 }
 

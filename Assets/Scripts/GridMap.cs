@@ -7,16 +7,18 @@ using Rooms;
 
 public class GridMap : MonoBehaviour
 {
-    const int gameGrid_x = 80;
-    const int gameGrid_y = 60;
+    public const int gameGrid_x = 80;
+    public const int gameGrid_y = 60;
 
-    const int mapRangeX1 = 20;
+    const int mapRangeX1 = 15;
     const int mapRangeX2 = 60;
-    const int mapRangeY1 = 20;
+    const int mapRangeY1 = 15;
     const int mapRangeY2 = 40;
 
-    int bottom_x = -(gameGrid_x / 2);
-    int bottom_y = -(gameGrid_y / 2);
+    public int bottom_x = -(gameGrid_x / 2);
+    public int bottom_y = -(gameGrid_y / 2);
+    public int top_x = gameGrid_x / 2;
+    public int top_y = gameGrid_y / 2;
 
     public Tile[,] gameGrid = new Tile[gameGrid_x, gameGrid_y];
 
@@ -40,18 +42,20 @@ public class GridMap : MonoBehaviour
             return Actors; //returns all Acting Entities
         }
     }
-    public Tilemap tilemap;
+    public Tilemap floorTiles;
+    public Tilemap wallTiles;
     public TileBase floor_sprite;
     public TileBase nextFloor_sprite;
     public TileBase wall_sprite;
 
     public Vector3 stairWorldPos;
+    public Vector3Int stairGridPos;
+
 
     private void Start()
     {
+
     }
-
-
 
 
     /// <summary>
@@ -93,13 +97,12 @@ public class GridMap : MonoBehaviour
 
     public void GenerateMap( GameObject player, int maxRoom, int minHeight, int maxHeight, int minWidth, int maxWidth, int EnemyCount, int maxItems)//Generates new map
     {
-
         for (int i = 0; i < gameGrid_x; ++i)// fills 2d array with regular tiles
             for (int j = 0; j < gameGrid_y; ++j)
             {
-                gameGrid[i, j] = new Tile(new Vector3(bottom_x + i, bottom_y + j, 0), false, i , j); 
+                gameGrid[i, j] = new Tile(new Vector3(bottom_x + i, bottom_y + j, 0), false, i, j);
             }
-        
+
 
         for (int i = 0; i < maxRoom; ++i)
         {
@@ -127,82 +130,103 @@ public class GridMap : MonoBehaviour
         GenerateItems(maxItems);
     }
 
-
     public void RenderAll() 
     {
 
         for (int i = 0; i < gameGrid_x; ++i) //render tiles
             for (int j = 0; j < gameGrid_y; ++j)
             {
-
- 
                 if (gameGrid[i, j].walkable)
                 {
-                    tilemap.SetTile((tilemap.WorldToCell(gameGrid[i, j].position)), floor_sprite);
+                    floorTiles.SetTile((floorTiles.WorldToCell(gameGrid[i, j].position)), floor_sprite);
                 }
                 else
                 {
                     foreach(Tile t in GetNeighbouringTiles(gameGrid[i, j]))
                     {
                         if(t.walkable)
-                            tilemap.SetTile((tilemap.WorldToCell(gameGrid[i, j].position)), wall_sprite);
+                            wallTiles.SetTile((wallTiles.WorldToCell(gameGrid[i, j].position)), wall_sprite);
                     }
                 }
             }
 
-        Vector3Int stairGridPos = Rooms[Rooms.Count - 1].GetCenter();//create stairs leading to next floor
+        stairGridPos = Rooms[Rooms.Count - 1].GetCenter();//create stairs leading to next floor
         stairWorldPos = gameGrid[stairGridPos.x, stairGridPos.y].tilePostion;
-        tilemap.SetTile(tilemap.WorldToCell( gameGrid[stairGridPos.x, stairGridPos.y].position ), nextFloor_sprite);
+        floorTiles.SetTile(floorTiles.WorldToCell( gameGrid[stairGridPos.x, stairGridPos.y].position ), nextFloor_sprite);
     }
 
     public void GenerateActors(GameObject player, int EnemyCount)//Generates enemies and adds player into the Entities list
     {
         player.transform.position = gameGrid[Rooms[0].GetCenter().x, Rooms[0].GetCenter().y].tilePostion;
 
-
         for (int n = 0; n < EnemyCount; ++n)//creates random enemy then stores in Entities list
         {
-            GameObject enemy = Instantiate( Database._instance.enemyDb[ Random.Range(0, Database._instance.enemyDb.Count)] );
+            GameObject enemy = Instantiate( Database._instance.GetRandomEnemy());
             Actor enemyActor = enemy.GetComponent<Actor>();
             enemyActor.fighter.parent = enemyActor;
             enemyActor.ai = new HostileEnemy(enemyActor);
-
 
             Entities.Add(enemyActor);
         }
 
         for(int i = 0; i < Actors.Count; ++i)
         {
-            int r = Random.Range(1, Rooms.Count);
-            int spawnX = Random.Range(Rooms[r].x1, Rooms[r].x2);
-            int spawnY = Random.Range(Rooms[r].y1, Rooms[r].y2);
-            if (GetEntityAt(new Vector3(spawnX, spawnY, 0)) == null && gameGrid[spawnX,spawnY].walkable)
+            Vector3Int spawn = RandomSpawn();
+            if (SpawnCheck(spawn))
             {
-                Actors[i].gameObject.transform.position = gameGrid[spawnX, spawnY].tilePostion;
+                Actors[i].gameObject.transform.position = gameGrid[spawn.x, spawn.y].tilePostion;
                 Actors[i].Death += OnEntityDeath;
             }
             else
                 --i;
         }
-
     }
 
     public void GenerateItems(int maxItems)
     {
         for(int i = 0; i < maxItems; ++i)
         {
-            int r = Random.Range(1, Rooms.Count);
-            int spawnX = Random.Range(Rooms[r].x1, Rooms[r].x2);
-            int spawnY = Random.Range(Rooms[r].y1, Rooms[r].y2);
-            if (GetEntityAt(new Vector3(spawnX, spawnY, 0)) == null && gameGrid[spawnX, spawnY].walkable)
+            Vector3Int spawn = RandomSpawn();
+            if (SpawnCheck(spawn))
             {
-                GameObject item = Instantiate( Database._instance.itemDb[Random.Range(1, Database._instance.itemDb.Count)] , gameGrid[spawnX, spawnY].tilePostion, Quaternion.identity);//coin position reserved at index 0
+                GameObject item = Instantiate( Database._instance.GetRandomItem(), gameGrid[spawn.x, spawn.y].tilePostion, Quaternion.identity);//coin position reserved at index 0
                 Entities.Add(item.GetComponent<Item>());
                 item.GetComponent<Item>().Death += OnEntityDeath; //add function onentitydeath to item event
             }
         }
     }
     
+    public bool SpawnCheck(Vector3Int gridPos)
+    {
+        return !GetEntityAt(gridPos) && gameGrid[gridPos.x, gridPos.y].walkable && gridPos != stairGridPos;
+    }
+
+    public Vector3Int RandomSpawn()
+    {
+        int r = Random.Range(1, Rooms.Count);
+        int spawnX = Random.Range(Rooms[r].x1, Rooms[r].x2);
+        int spawnY = Random.Range(Rooms[r].y1, Rooms[r].y2);
+        return new Vector3Int(spawnX, spawnY, 0);
+    }
+
+
+    public void TileMapToGridMap()
+    {
+        for (int i = 0; i < gameGrid_x; ++i)// fills 2d array with regular tiles
+            for (int j = 0; j < gameGrid_y; ++j)
+            {
+                gameGrid[i, j] = new Tile(new Vector3(bottom_x + i, bottom_y + j, 0), false, i, j);
+            }
+
+        for (int i = 0; i < gameGrid_x; ++i) //render tiles
+            for (int j = 0; j < gameGrid_y; ++j)
+            {
+                if (floorTiles.HasTile(Vector3Int.FloorToInt(gameGrid[i, j].position)))
+                {
+                    gameGrid[i, j].walkable = true;
+                }
+            }
+    }
 
 
 
@@ -286,7 +310,7 @@ public class GridMap : MonoBehaviour
 
         return neighbours;
     }
-    public Tile WorldToCell(Vector3 worldPosition)
+    public Tile WorldToTile(Vector3 worldPosition)
     {
         int x = Mathf.RoundToInt(worldPosition.x - 0.5f + (gameGrid_x / 2)); //only accounts for when grid's position is  (0,0,0) (-0.5 for offset because unity likes to round up for some reason)
         int y = Mathf.RoundToInt(worldPosition.y - 0.5f + (gameGrid_y / 2));
@@ -307,7 +331,7 @@ public class GridMap : MonoBehaviour
                 Gizmos.color = t.walkable ? Color.white : Color.red;
                 foreach (Entity e in Entities)
                 {
-                    if (WorldToCell(e.transform.position) == t)
+                    if (WorldToTile(e.transform.position) == t)
                         Gizmos.color = Color.green;
                 }
                 Gizmos.DrawCube(t.tilePostion, Vector3.one * (0.5f));
