@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2428321111117667458}
   - component: {fileID: 5254896140814639219}
+  - component: {fileID: -7490064326900288261}
   m_Layer: 0
   m_Name: Goblin
   m_TagString: Untagged
@@ -25,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3576032607873545180}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.5, y: -9.5, z: 0}
+  m_LocalPosition: {x: 11.5, y: 2.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7854358924115834923}
@@ -49,17 +50,34 @@ MonoBehaviour:
   fighter:
     parent: {fileID: 5254896140814639219}
     maxHp: 3
-    currHp: 0
+    currHp: 3
     defense: 0
     power: 3
     recoverySpeed: 100
-  ai:
-    parent: {fileID: 0}
-    drop_item: coin
+  engine: {fileID: 0}
+  HitEffect: {fileID: 0}
+  ai: {fileID: 0}
   inventory:
     parent: {fileID: 0}
     capacity: 0
     items: []
+--- !u!114 &-7490064326900288261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3576032607873545180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1104058eb2a28344ab1f555be75f1054, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: {fileID: 0}
+  drop_item: coin
+  attackRange: 2
+  hitEffect: {fileID: 7979731497706044442, guid: b64406bcd41b8c14da3c637117839815,
+    type: 3}
 --- !u!1 &5015963475258666074
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,7 +148,7 @@ SpriteRenderer:
   m_SortingLayerID: -2022033023
   m_SortingLayer: 2
   m_SortingOrder: 1
-  m_Sprite: {fileID: 8375856745163201129, guid: a56585bf68d6dca40a9e9300a9c1e8b5,
+  m_Sprite: {fileID: -1007931243288087428, guid: 74c1b7f44a884e54e9461160dbbbe099,
     type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

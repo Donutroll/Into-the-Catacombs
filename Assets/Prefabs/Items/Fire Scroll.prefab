@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4407990780606151278}
   - component: {fileID: 9036904059971475348}
+  - component: {fileID: -1683986902783558453}
   m_Layer: 0
   m_Name: Fire Scroll
   m_TagString: Untagged
@@ -25,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 903888392179567976}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 12.5, y: 2.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7036715740703365688}
@@ -53,7 +54,25 @@ MonoBehaviour:
     defense: 0
     power: 0
     recoverySpeed: 0
-  consumable: {fileID: 11400000, guid: 4da8e996089bda242918a38881274f6b, type: 2}
+  engine: {fileID: 0}
+  consumable: {fileID: -1683986902783558453}
+  value: 0
+--- !u!114 &-1683986902783558453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 903888392179567976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c104aafb4d6286040a190fdc437a7d0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: {fileID: 9036904059971475348}
+  Effect: {fileID: 4723046266854294367, guid: 8aa5dde16f00f6f45a9b867852af56db, type: 3}
+  damage: 3
+  radius: 2
 --- !u!1 &3761421508232951436
 GameObject:
   m_ObjectHideFlags: 0
@@ -121,10 +140,10 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -2022033023
+  m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 2752866033716964381, guid: a56585bf68d6dca40a9e9300a9c1e8b5,
+  m_Sprite: {fileID: -8408473800176538992, guid: 74c1b7f44a884e54e9461160dbbbe099,
     type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

@@ -20,9 +20,11 @@ public class Database : MonoBehaviour
 
     public List<GameObject> itemDb;
 
-    public List<GameObject> enemyDb;
+    public List<GameObject> actorsDb;
 
     public List<GameObject> effectsDb;
+
+    public List<GameObject> interactableDb;
 
     public GameObject GetObject( List<GameObject> database, string objectName)
     {
@@ -40,9 +42,9 @@ public class Database : MonoBehaviour
     {
         return GetObject(itemDb, objectName);
     }
-    public GameObject GetObjectInEnemy( string objectName)
+    public GameObject GetObjectInActors( string objectName)
     {
-        return GetObject(enemyDb, objectName);
+        return GetObject(actorsDb, objectName);
     }
 
 
@@ -53,7 +55,7 @@ public class Database : MonoBehaviour
 
     public GameObject GetRandomItem()
     {
-        int chance = Random.Range(0, 10);
+        int chance = Random.Range(0, 20);
         string name;
         if (chance <= 2)
             name = "Fire Scroll";
@@ -68,15 +70,26 @@ public class Database : MonoBehaviour
 
     public GameObject GetRandomEnemy()
     {
-        int chance = Random.Range(0, 10);
+        int chance = Random.Range(0, 30);
         string name;
         if (chance <= 2)
             name = "Orc";
         else if (chance > 2 && chance < 6)
+            name = "Warlock";
+        else if (chance >= 6 && chance < 15)
             name = "Goblin";
+        else if (chance >= 15 && chance < 20)
+            name = "SwordGoblin";
         else
             name = "Slime";
 
-        return GetObjectInEnemy(name);
+        return GetObjectInActors(name);
     }
+
+    public GameObject GetObjectFromInteractable(string objectName)
+    {
+        return GetObject(interactableDb, objectName);
+    }
+
+
 }

@@ -47,6 +47,12 @@ TagManager:
   - name: Interactable
     uniqueID: 2272934273
     locked: 0
+  - name: Effects
+    uniqueID: 1106447319
+    locked: 0
+  - name: Visibilitymap
+    uniqueID: 3581288127
+    locked: 0
   - name: Ui
     uniqueID: 854558463
     locked: 0

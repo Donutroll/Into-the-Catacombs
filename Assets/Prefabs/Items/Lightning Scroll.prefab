@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8451717700410777923}
   - component: {fileID: 4827882627875339454}
+  - component: {fileID: -8509203545594100163}
   m_Layer: 0
   m_Name: Lightning Scroll
   m_TagString: Untagged
@@ -25,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 44250081682057269}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.6269865, y: -0.4282275, z: -20.925781}
+  m_LocalPosition: {x: 13.5, y: 2.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2170519558707158904}
@@ -53,7 +54,25 @@ MonoBehaviour:
     defense: 0
     power: 0
     recoverySpeed: 0
-  consumable: {fileID: 11400000, guid: 15bb4fce762734d4da3575ba2d312b7d, type: 2}
+  engine: {fileID: 0}
+  consumable: {fileID: -8509203545594100163}
+  value: 0
+--- !u!114 &-8509203545594100163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44250081682057269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c73d212843c01f4c9673a116604cb5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: {fileID: 4827882627875339454}
+  Effect: {fileID: 764823888835296418, guid: bfaf3795e2d5e324bacb4ca9e5907967, type: 3}
+  damage: 10
+  radius: 0
 --- !u!1 &1900988499275925313
 GameObject:
   m_ObjectHideFlags: 0
@@ -121,10 +140,10 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -2022033023
+  m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 4019048365324462938, guid: a56585bf68d6dca40a9e9300a9c1e8b5,
+  m_Sprite: {fileID: -5392189345230742318, guid: 74c1b7f44a884e54e9461160dbbbe099,
     type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

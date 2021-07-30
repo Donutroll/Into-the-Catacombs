@@ -112,6 +112,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3655190864962279112}
   - component: {fileID: 3655190864962279159}
+  - component: {fileID: 727246620532846230}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -154,15 +155,30 @@ MonoBehaviour:
     maxHp: 10
     currHp: 10
     defense: 0
-    power: 2
+    power: 3
     recoverySpeed: 50
-  ai:
-    parent: {fileID: 0}
-    drop_item: coin
+  engine: {fileID: 0}
+  HitEffect: {fileID: 2668928465096855913, guid: c6d31650ba111aa4ea395e24653cfd1f,
+    type: 3}
+  ai: {fileID: 0}
   inventory:
     parent: {fileID: 0}
     capacity: 4
     items: []
+--- !u!114 &727246620532846230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3655190864962279113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9316a740d496f645a173a0ed0ca4205, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: {fileID: 0}
+  drop_item: coin
 --- !u!1 &3655190865565402247
 GameObject:
   m_ObjectHideFlags: 0

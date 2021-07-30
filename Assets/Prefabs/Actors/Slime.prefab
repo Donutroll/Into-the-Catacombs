@@ -92,6 +92,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7178072157118193070}
   - component: {fileID: 775647750664823135}
+  - component: {fileID: 1882157727818652551}
   m_Layer: 0
   m_Name: Slime
   m_TagString: Untagged
@@ -131,14 +132,31 @@ MonoBehaviour:
   fighter:
     parent: {fileID: 775647750664823135}
     maxHp: 2
-    currHp: 0
+    currHp: 2
     defense: 0
     power: 1
-    recoverySpeed: 150
-  ai:
-    parent: {fileID: 0}
-    drop_item: coin
+    recoverySpeed: 200
+  engine: {fileID: 0}
+  HitEffect: {fileID: 0}
+  ai: {fileID: 0}
   inventory:
     parent: {fileID: 0}
     capacity: 0
     items: []
+--- !u!114 &1882157727818652551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8326624655823794928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1104058eb2a28344ab1f555be75f1054, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: {fileID: 0}
+  drop_item: coin
+  attackRange: 1
+  hitEffect: {fileID: 1795928223983024908, guid: e116bef26c406e94d8f9e616bc8d8dcc,
+    type: 3}

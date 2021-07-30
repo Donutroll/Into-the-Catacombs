@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1474124955109699701}
   - component: {fileID: 1474124955109699658}
+  - component: {fileID: -9085938649541589839}
   m_Layer: 0
   m_Name: Orc
   m_TagString: Untagged
@@ -48,18 +49,43 @@ MonoBehaviour:
   type: Orc
   fighter:
     parent: {fileID: 1474124955109699658}
-    maxHp: 8
-    currHp: 0
+    maxHp: 6
+    currHp: 6
     defense: 0
     power: 2
-    recoverySpeed: 50
-  ai:
-    parent: {fileID: 0}
-    drop_item: coin
+    recoverySpeed: 75
+  engine: {fileID: 0}
+  HitEffect: {fileID: 1795928223983024908, guid: e116bef26c406e94d8f9e616bc8d8dcc,
+    type: 3}
+  ai: {fileID: 0}
   inventory:
     parent: {fileID: 0}
     capacity: 0
     items: []
+--- !u!114 &-9085938649541589839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1474124955109699659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a424247af5b0bac42b054c4ce9152453, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: {fileID: 0}
+  drop_item: coin
+  attackRange: 2
+  hitEffect: {fileID: 1795928223983024908, guid: e116bef26c406e94d8f9e616bc8d8dcc,
+    type: 3}
+  Sprites:
+  - {fileID: -4762674911984034653, guid: 74c1b7f44a884e54e9461160dbbbe099, type: 3}
+  - {fileID: 1034537400385087400, guid: 74c1b7f44a884e54e9461160dbbbe099, type: 3}
+  currSprite: {fileID: 0}
+  casting: 0
+  spellEffect: Fire
+  hitRadius: 1
 --- !u!1 &1474124955959815608
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,7 +156,7 @@ SpriteRenderer:
   m_SortingLayerID: -2022033023
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: -5207405727549496978, guid: a56585bf68d6dca40a9e9300a9c1e8b5,
+  m_Sprite: {fileID: 1034537400385087400, guid: 74c1b7f44a884e54e9461160dbbbe099,
     type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

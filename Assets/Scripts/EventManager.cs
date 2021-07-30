@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using Game;
+using GameAct;
 
 //override with this.onselected with askfor events
 public class EventManager
@@ -21,7 +21,7 @@ public class EventManager
         this.player = engine.player;
     }
 
-    public void HandleAction(Game.Action action)
+    public void HandleAction(GameAct.Action action)
     {
         if (action == null)
         {
@@ -37,25 +37,31 @@ public class EventManager
         Debug.LogError("EventManager HandleEvent was called, somethings gone wrong");
     }
 
+
     public void HandleEnemyTurn()
     {
         GridMap Grid = engine.Grid;
-        for (int i = 1; i < Grid.Actors.Count; ++i)
+        if (Grid.Actors.Count > 1)
         {
-            Actor actor = Grid.Actors[i];
-            if ( GameManager.VectorDistance(actor.gameObject, player) < engine.lightingRenderer.playerLightRadius )
-            { 
-                actor.fighter.Energy += actor.fighter.recoverySpeed;
-                while (actor.fighter.Energy >= Fighter.actionCost)
+            for (int i = 1; i < Grid.Actors.Count; ++i)
+            {
+                Actor actor = Grid.Actors[i];
+                if (GameManager.VectorDistance(actor.gameObject, player) < engine.lightingRenderer.playerLightRadius - 0.5f)
                 {
-                    actor.fighter.Energy -= actor.ai.TakeTurn(engine);
+                    actor.fighter.Energy += actor.fighter.recoverySpeed;
+                    while (actor.fighter.Energy >= Fighter.actionCost)
+                    {
+                        actor.fighter.Energy -= actor.ai.TakeTurn(engine);
+                    }
                 }
             }
         }
 
     }
 
-    
+    public List<KeyCode> ExitLog = new List<KeyCode>() { KeyCode.Escape, KeyCode.Q };
+
+    public List<KeyCode> Enterlog = new List<KeyCode>() { KeyCode.E, KeyCode.Return, KeyCode.Space };
 
 
     public Tuple<int, int> MoveLog(KeyCode input)
@@ -86,10 +92,6 @@ public class AskForEvent : EventManager
     public AskForEvent(GameManager engine) : base(engine)
     { }
 
-    public List<KeyCode> ExitLog = new List<KeyCode>() { KeyCode.Escape, KeyCode.Q };
-
-    public List<KeyCode> Enterlog = new List<KeyCode>() { KeyCode.E, KeyCode.Return, KeyCode.Space };
-
     public void OnExit()
     {
         Debug.Log("Quitting a subclass of AskForEvent");
@@ -106,11 +108,6 @@ public class GameOverEvent : EventManager
     { }
     public override void HandleEvent()
     {
-        foreach (KeyCode k in engine.inputManager.inputList)
-        {
-            if (k == KeyCode.Escape)
-                OnExit();
-        }
     }
 
     public void OnExit()
@@ -122,15 +119,18 @@ public class GameOverEvent : EventManager
 public class PauseScreenEvent : EventManager
 {
     public PauseScreenEvent(GameManager engine) : base (engine)
-    { }
+    {
+        engine.uiManager.CreatePause();
+    }
 
     public override void HandleEvent()
     {
        foreach( KeyCode k in engine.inputManager.inputList)
         {
-            if (k == KeyCode.Escape)
-                OnExit();
+            if (ExitLog.Contains(k))
+                engine.uiManager.ExitPause();
         }
+        engine.inputManager.inputList.Clear();
     }
 
     public void OnExit()
@@ -151,7 +151,7 @@ public class MainGameEvent : EventManager
 
     public override void HandleEvent()
     {
-        Game.Action action = null;
+        GameAct.Action action = null;
         foreach (KeyCode k in engine.inputManager.inputList)
         {
             if (MoveLog(k) != null)
@@ -245,6 +245,12 @@ public class InventoryEvent :  AskForEvent
                     break;
                 case KeyCode.A:
                     --inventorySlot;
+                    break;
+                case KeyCode.W:
+                    inventorySlot -= 2;
+                    break;
+                case KeyCode.S:
+                    inventorySlot += 2;
                     break;
                 default:
                     break;
